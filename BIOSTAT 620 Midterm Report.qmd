@@ -31,7 +31,7 @@ In this report, Medicaid coverage refers to both fee-for-service and managed car
 
 ### 3.1 Data Introduction
 
-Medicaid Coverage of Cessation Treatments and Barriers To Treatments dataset is sourced from the American Lung Association State Tobacco Coverage Database, and is provided by CDC National Center for Disease Prevention and Health Promotion, Office on Smoking and Health. The data definitions and descriptions are based on the glossary provided by the CDC \[2\]. The original dataset contains 47,481 observations and 23 variables. This report uses five columns (`Year`, \\`LocationDesc`, `MeasureDesc`, `Sub_Measure`, `Summary`). Medicaid dataset are separated into two datasets based on the `MeasureDesc` variable (`Medicaid Coverage of Cessation Treatments`, `Barriers to Treatments`). No missing variable (NA) were detected.
+Medicaid Coverage of Cessation Treatments and Barriers To Treatments dataset is sourced from the American Lung Association State Tobacco Coverage Database, and is provided by CDC National Center for Disease Prevention and Health Promotion, Office on Smoking and Health. The data definitions and descriptions are based on the glossary provided by the CDC \[2\]. The original dataset contains 47,481 observations and 23 variables. This report uses five columns (`Year`, `LocationDesc`, `MeasureDesc`, `Sub_Measure`, `Summary`). Medicaid dataset are separated into two datasets based on the `MeasureDesc` variable (`Medicaid Coverage of Cessation Treatments`, `Barriers to Treatments`). No missing variable (NA) were detected.
 
 Medicaid Coverage Dataset $(24990 \times 4)$
 
@@ -41,7 +41,7 @@ Medicaid Coverage Dataset $(24990 \times 4)$
 
 Barrier Treatment Dataset $(22491 \times 4)$
 
--   `Sub_Measure` is renamed to `Type` (barrier type) 
+-   `Sub_Measure` is renamed to `Type` (barrier type).
 
 -   `Type` column includes both `Stepped-care therapy` and `Stepped Care Therapy Required`. Since the difference is not mentioned in the glossary, it is assumed as equivalent in this report. Additionally, the `Type` column includes `Barriers to Treatments` from the `MeasureDesc` column. This report assumes that it is a typing error and the rows will remain in the data. 
 
@@ -425,7 +425,7 @@ ggplot(data = barrier_midwest, aes(x = fct_reorder(Type,-n), y = n)) +
 
 ## 5. Discussion
 
-### 5.1 Conclusion 
+### 5.1 Conclusion
 
 The results from 4.1 align with the real world events. Two major decreases in the proportion of Medicaid coverage occurred in 2009 and 2013. Simultaneously, Great Recession took place from 2007 to mid 2009 \[3\], and Taper Tantrum occurred in 2013 \[4\]. It can be concluded that the economic crisis have led the decrease in Medicaid coverage. However, since there was no drop during pandemic from 2020, Medicaid state coverage may be highly dependent on the economic status of the country rather than health status of the country. Overall, the Medicaid coverage trend has improved in the U.S. from 2008 to 2024. The drop in Medicaid coverage in the Midwest from 2023-2024 is likely due to Minnesota's result.
 

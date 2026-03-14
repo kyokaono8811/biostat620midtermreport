@@ -3238,7 +3238,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="data-background-preparation">3. Data Background &amp; Preparation</h2>
 <section id="data-introduction" class="level3">
 <h3 class="anchored" data-anchor-id="data-introduction">3.1 Data Introduction</h3>
-<p>Medicaid Coverage of Cessation Treatments and Barriers To Treatments dataset is sourced from the American Lung Association State Tobacco Coverage Database, and is provided by CDC National Center for Disease Prevention and Health Promotion, Office on Smoking and Health. The data definitions and descriptions are based on the glossary provided by the CDC [2]. The original dataset contains 47,481 observations and 23 variables. This report uses five columns (<code>Year</code>, \<code>LocationDesc</code>, <code>MeasureDesc</code>, <code>Sub_Measure</code>, <code>Summary</code>). Medicaid dataset are separated into two datasets based on the <code>MeasureDesc</code> variable (<code>Medicaid Coverage of Cessation Treatments</code>, <code>Barriers to Treatments</code>). No missing variable (NA) were detected.</p>
+<p>Medicaid Coverage of Cessation Treatments and Barriers To Treatments dataset is sourced from the American Lung Association State Tobacco Coverage Database, and is provided by CDC National Center for Disease Prevention and Health Promotion, Office on Smoking and Health. The data definitions and descriptions are based on the glossary provided by the CDC [2]. The original dataset contains 47,481 observations and 23 variables. This report uses five columns (<code>Year</code>, <code>LocationDesc</code>, <code>MeasureDesc</code>, <code>Sub_Measure</code>, <code>Summary</code>). Medicaid dataset are separated into two datasets based on the <code>MeasureDesc</code> variable (<code>Medicaid Coverage of Cessation Treatments</code>, <code>Barriers to Treatments</code>). No missing variable (NA) were detected.</p>
 <p>Medicaid Coverage Dataset <span class="math inline">\((24990 \times 4)\)</span></p>
 <ul>
 <li><p><code>Sub_Measure</code> is renamed to <code>Treatment</code> (treatment type).</p></li>
@@ -3246,7 +3246,7 @@ window.Quarto = {
 </ul>
 <p>Barrier Treatment Dataset <span class="math inline">\((22491 \times 4)\)</span></p>
 <ul>
-<li><p><code>Sub_Measure</code> is renamed to <code>Type</code> (barrier type) </p></li>
+<li><p><code>Sub_Measure</code> is renamed to <code>Type</code> (barrier type).</p></li>
 <li><p><code>Type</code> column includes both <code>Stepped-care therapy</code> and <code>Stepped Care Therapy Required</code>. Since the difference is not mentioned in the glossary, it is assumed as equivalent in this report. Additionally, the <code>Type</code> column includes <code>Barriers to Treatments</code> from the <code>MeasureDesc</code> column. This report assumes that it is a typing error and the rows will remain in the data. </p></li>
 <li><p>Barriers to treatment are defined as Medicaid policies that make it difficult for patients to access to treatments.</p></li>
 </ul>
