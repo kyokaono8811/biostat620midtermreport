@@ -111,11 +111,11 @@ medicaid_coverage_data <- medicaid_coverage_data %>%
 ```
 
 ```{r, echo = FALSE}
-kable(head(medicaid_coverage_data), caption = "Table 1: Head of Medicaid Coverage Dataset")
+kable(head(as_tibble(medicaid_coverage_data)), caption = "Table 1: Head of Medicaid Coverage Dataset")
 ```
 
 ```{r, echo = FALSE}
-kable(tail(medicaid_coverage_data), caption = "Table 2: Tail of Medicaid Coverage Dataset")
+kable(tail(as_tibble(medicaid_coverage_data)), caption = "Table 2: Tail of Medicaid Coverage Dataset")
 ```
 
 ```{r, include = FALSE}
@@ -141,7 +141,7 @@ kable(head(barrier_data), caption = "Table 3: Head of Barrier Treatment Dataset"
 ```
 
 ```{r, echo = FALSE}
-kable(tail(barrier_data), caption = "Table 4: Tail of Barrier Treatment Dataset")
+kable(tail(as_tibble(barrier_data)), caption = "Table 4: Tail of Barrier Treatment Dataset")
 ```
 
 ```{r, include = FALSE}
@@ -158,26 +158,26 @@ unique(barrier_data$Type)
 
 ```{r, echo = FALSE}
 # How many rows/data each year (medicaid_coverage_data)
-kable(medicaid_coverage_data %>% group_by(Year) %>% count(), 
+kable(as_tibble(medicaid_coverage_data %>% group_by(Year) %>% count()), 
       caption = "Table 5: Number of Data Each Year (Medicaid Coverage Dataset)")
 ```
 
 ```{r, echo = FALSE}
 # How many rows/data each year (barrier_data) 
-kable(barrier_data %>% group_by(Year) %>% count(), caption = "Table 6: Number of Data Each Year (Barrier Treatment Dataset)")
+kable(as_tibble(barrier_data %>% group_by(Year) %>% count()), caption = "Table 6: Number of Data Each Year (Barrier Treatment Dataset)")
 ```
 
 -   **State**: 51 states in the U.S. The sample size is consistent for each state.
 
 ```{r, echo = FALSE}
 # How many rows/data each state (medicaid_coverage_data)
-kable(head(medicaid_coverage_data %>% group_by(State) %>% count()), 
+kable(head(as_tibble(medicaid_coverage_data %>% group_by(State) %>% count())), 
       caption = "Table 7: Number of Data Each State (Medicaid Coverage Dataset)")
 ```
 
 ```{r, echo = FALSE}
 # How many rows/data each state (barrier_data)
-kable(head(barrier_data %>% group_by(State) %>% count()), 
+kable(head(as_tibble(barrier_data %>% group_by(State) %>% count())), 
       caption = "Table 8: Number of Data Each State (Barrier Treatment Dataset)")
 ```
 
@@ -381,7 +381,7 @@ barrier_us <- barrier_data %>%
 
 ```{r, echo = FALSE}
 ggplot(data = barrier_us, aes(x = fct_reorder(Type,-n), y = n)) + 
-  geom_col() + 
+  geom_col(fill = "blue") + 
   labs(x = "Type", y = "Count") +
   labs(title = "Type of Barrier in the U.S. 2024") +
   theme(plot.title = element_text(hjust = 0.5)) + 
@@ -415,7 +415,7 @@ barrier_midwest <- barrier_data %>% filter(State %in% midwest_vec2) %>% filter(Y
 
 ```{r, echo = FALSE}
 ggplot(data = barrier_midwest, aes(x = fct_reorder(Type,-n), y = n)) + 
-  geom_col() + 
+  geom_col(fill = "skyblue") + 
   labs(x = "Type", y = "Count") + 
   labs(title = "Type of Barrier in the Midwest 2024") + 
   theme(plot.title = element_text(hjust = 0.5)) + 
@@ -424,11 +424,11 @@ ggplot(data = barrier_midwest, aes(x = fct_reorder(Type,-n), y = n)) +
 
 ## 5. Discussion
 
-## 5.1 Interpretation
+### 5.1 Conclusion 
 
 The results from 4.1 align with the real world events. Two major decreases in the proportion of Medicaid coverage occurred in 2009 and 2013. Simultaneously, Great Recession took place from 2007 to mid 2009 \[3\], and Taper Tantrum occurred in 2013 \[4\]. It can be concluded that the economic crisis have led the decrease in Medicaid coverage. However, since there was no drop during pandemic from 2020, Medicaid state coverage may be highly dependent on the economic status of the country rather than health status of the country. Overall, the Medicaid coverage trend has improved in the U.S. from 2008 to 2024. The drop in Medicaid coverage in the Midwest from 2023-2024 is likely due to Minnesota's result.
 
-## 5.2 Limitation
+### 5.2 Limitation
 
 This report assumes that `Barriers to Treatments` from in the `Type` column and `Comprehensive Medicaid Coverage of Treatments` in the `Treatment` column are due to type errors. However, more explanations of these variable inclusions will be helpful in investigating the barrier treatment further for future project.
 
