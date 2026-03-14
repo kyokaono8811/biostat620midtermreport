@@ -4,6 +4,7 @@ author: Kyoka Ono
 format: html
 editor: visual
 embed-resources: TRUE
+fig-align: center
 ---
 
 ## 1. Abstract
