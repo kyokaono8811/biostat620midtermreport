@@ -1,0 +1,443 @@
+---
+title: "BIOSTAT 620 Midterm Report"
+author: Kyoka Ono
+format: html
+editor: visual
+embed-resources: TRUE
+---
+
+## 1. Abstract
+
+This report investigates whether state Medicaid coverage for smoking cessation treatment has improved in the U.S. from 2008 to 2024, using the CDC’s (Centers for Disease Control and Prevention) Medicaid Coverage of Cessation Treatments and Barriers To Treatments dataset. This report also investigates Medicaid coverage of smoking cessation treatment in the Midwest. The analysis shows that Medicaid coverage has significantly improved in the U.S. overall, and the Midwest shows relatively high Medicaid coverage in 2024.
+
+## 2. Introduction
+
+Smoking has been one of the most detrimental factors for health in the U.S. and globally. It increases the risk of lung disease, air pollution, and potentially leads to a significant socioeconomic burden due to smoking addiction. According to the CDC, Medicaid allocates approximately \$40 billion dollars to alleviate the smoking related issues, which is equivalent to 15% of the total Medicaid spending \[1\]. Despite the effort, smoking led to 480,000 deaths in the U.S. annually, implying that insurance coverage in smoking cessation treatment remains important \[1\]. In order to find whether cessation treatment has improved, this paper investigates:
+
+-   Medicaid coverage for smoking cessation treatment in the U.S. from 2008 to 2024.
+
+-   Medicaid coverage for cessation treatment in the Midwest from 2008 to 2024.
+
+Additional Questions:
+
+-   Type of barriers to receive Medicaid coverage for cessation treatment in the U.S. in 2024.
+
+-   Type of barriers to receive Medicaid coverage for cessation treatment in the Midwest in 2024.
+
+In this report, Medicaid coverage refers to both fee-for-service and managed care plans.
+
+## 3. Data Background & Preparation
+
+### 3.1 Data Introduction
+
+Medicaid Coverage of Cessation Treatments and Barriers To Treatments dataset is sourced from the American Lung Association State Tobacco Coverage Database, and is provided by CDC National Center for Disease Prevention and Health Promotion, Office on Smoking and Health. The data definitions and descriptions are based on the glossary provided by the CDC \[2\]. The original dataset contains 47,481 observations and 23 variables. This report uses five columns (`Year`, \\`LocationDesc`, `MeasureDesc`, `Sub_Measure`, `Summary`). Medicaid dataset are separated into two datasets based on the `MeasureDesc` variable (`Medicaid Coverage of Cessation Treatments`, `Barriers to Treatments`). No missing variable (NA) were detected.
+
+Medicaid Coverage Dataset $(24990 \times 4)$
+
+-   `Sub_Measure` is renamed to `Treatment` (treatment type).
+
+-   `Treatment` column includes `Comprehensive Medicaid Coverage of Treatments` from the `MeasureDesc` column. This report assumes that it is due to typing error and the rows will remain in the data.
+
+Barrier Treatment Dataset $(22491 \times 4)$
+
+-   `Sub_Measure` is renamed to `Type` (barrier type) 
+
+-   `Type` column includes both `Stepped-care therapy` and `Stepped Care Therapy Required`. Since the difference is not mentioned in the glossary, it is assumed as equivalent in this report. Additionally, the `Type` column includes `Barriers to Treatments` from the `MeasureDesc` column. This report assumes that it is a typing error and the rows will remain in the data. 
+
+-   Barriers to treatment are defined as Medicaid policies that make it difficult for patients to access to treatments.
+
+In both datasets, the `Summary` column is renamed to `Status` (Medicaid coverage status). The column `MeasureDesc` is removed from both datasets.
+
+```{r, include = FALSE}
+library(tidyverse)
+library(dplyr)
+library(knitr)
+library(maps)
+```
+
+```{r, include = FALSE}
+medicaid_data <- read.csv("/Users/kyokaono/Desktop/biostat620_midterm_data.csv")
+```
+
+```{r, include = FALSE}
+dim(medicaid_data)
+```
+
+```{r, include = FALSE}
+unique(medicaid_data$DataSource)
+unique(medicaid_data$TopicType)
+unique(medicaid_data$Topic)
+unique(medicaid_data$MeasureDesc)
+```
+
+```{r, include = FALSE}
+# Extract Key Variables/Variables of Interest
+medicaid_data <- medicaid_data %>% select(Year,
+                                          LocationDesc,
+                                          MeasureDesc,
+                                          Sub_Measure,
+                                          Summary) 
+```
+
+```{r, include = FALSE}
+str(medicaid_data)
+```
+
+```{r, include = FALSE}
+# Check Missing values (None)
+na_vec <- c()
+for (i in colnames(medicaid_data))
+{
+  if (sum(is.na(medicaid_data[i])) > 0){
+    na_vec <- c(na_vec, i)
+  }
+}
+na_vec
+```
+
+```{r, include = FALSE}
+# Data 1: Medicaid_Coverage_Data
+medicaid_coverage_data <- medicaid_data %>% filter(MeasureDesc == "Medicaid Coverage of Cessation Treatments") %>% select(-MeasureDesc)
+dim(medicaid_coverage_data)
+```
+
+```{r, include = FALSE}
+# rename column names
+medicaid_coverage_data <- medicaid_coverage_data %>% 
+  rename(Status = Summary,
+         State = LocationDesc,
+         Treatment = Sub_Measure
+         )
+```
+
+```{r, echo = FALSE}
+kable(head(medicaid_coverage_data), caption = "Table 1: Head of Medicaid Coverage Dataset")
+```
+
+```{r, echo = FALSE}
+kable(tail(medicaid_coverage_data), caption = "Table 2: Tail of Medicaid Coverage Dataset")
+```
+
+```{r, include = FALSE}
+# Data 2: Barrier_Data
+barrier_data <- medicaid_data %>% filter(MeasureDesc == "Barriers to Treatments") %>% select(-MeasureDesc)
+dim(barrier_data)
+```
+
+```{r, include = FALSE}
+# rename column names 
+barrier_data <- barrier_data %>% 
+  rename(Status = Summary,
+         State = LocationDesc,
+         Type = Sub_Measure)
+```
+
+```{r, include = FALSE}
+barrier_data$Type[barrier_data$Type == "Stepped-care therapy"] <- "Stepped Care Therapy Required"
+```
+
+```{r, echo = FALSE}
+kable(head(barrier_data), caption = "Table 3: Head of Barrier Treatment Dataset")
+```
+
+```{r, echo = FALSE}
+kable(tail(barrier_data), caption = "Table 4: Tail of Barrier Treatment Dataset")
+```
+
+```{r, include = FALSE}
+unique(medicaid_coverage_data$Treatment)
+```
+
+```{r, include = FALSE}
+unique(barrier_data$Type)
+```
+
+### 3.2 Variable Descriptions
+
+-   **Year**: 2008-2024. The sample size varies for each year.
+
+```{r, echo = FALSE}
+# How many rows/data each year (medicaid_coverage_data)
+kable(medicaid_coverage_data %>% group_by(Year) %>% count(), 
+      caption = "Table 5: Number of Data Each Year (Medicaid Coverage Dataset)")
+```
+
+```{r, echo = FALSE}
+# How many rows/data each year (barrier_data) 
+kable(barrier_data %>% group_by(Year) %>% count(), caption = "Table 6: Number of Data Each Year (Barrier Treatment Dataset)")
+```
+
+-   **State**: 51 states in the U.S. The sample size is consistent for each state.
+
+```{r, echo = FALSE}
+# How many rows/data each state (medicaid_coverage_data)
+kable(head(medicaid_coverage_data %>% group_by(State) %>% count()), 
+      caption = "Table 7: Number of Data Each State (Medicaid Coverage Dataset)")
+```
+
+```{r, echo = FALSE}
+# How many rows/data each state (barrier_data)
+kable(head(barrier_data %>% group_by(State) %>% count()), 
+      caption = "Table 8: Number of Data Each State (Barrier Treatment Dataset)")
+```
+
+-   **Treatment**:
+
+    -   `Nicotine patch`
+
+    -   `Nicotine gum`
+
+    -   `Nicotine lozenge`
+
+    -   `Nicotine nasal spray`
+
+    -   `Nicotine inhaler`
+
+    -   `Varenicline`
+
+    -   `Buropion` 
+
+    -   `Individual Counseling (face-to-face)`
+
+    -   `Group Counseling`
+
+    -   `Phone Counseling`
+
+-   **Type**:
+
+    -   `Co-Payments Required`: Patients are required to pay a dollar amount for each prescription they fill or counseling session they attend for at least one of the treatments covered. 
+
+    -   `Prior Authorization Required`: The health plan or Medicaid office must authorize treatment, whether counseling or medications, before it is dispensed. 
+
+    -   `Counseling Required for Medications`: Patients are required to enroll in a counseling program before they can fill their prescription.
+
+    -   `Stepped Care Therapy Required`: Patients are required to try one treatment before they are allowed to try another. 
+
+    -   `Limited on Duration`: Medications are limited to a certain number of delays, months or amounts; and/or counseling is limited to a certain number of sessions. 
+
+    -   `Annual Limits`: Members are only allowed to attempt to quit X number of times per year with covered treatment. 
+
+    -   `Lifetime Limits`: Once a member has used the tobacco cessation benefit X number of times, they are no longer covered for it.
+
+    -   `Other Barriers` 
+
+-   **Status (Medical Coverage Dataset)**:
+
+    -   `Yes`: State Medicaid coverage of cessation treatments under both fee (fee-for- service and managed care plans includes all tobacco cessation treatments.
+
+    -   `No`: State Medicaid coverage of cessation treatments under both fee (fee-for -service and managed care plans) do not include all tobacco cessation treatments. 
+
+    -   `Varies by Plan`: Specific to the treatment.
+
+    -   `Not Available`: Data for this was either absent or not reported.
+
+    -   `Not Applicable`: Data for this measure is not relevant.
+
+-   **Status (Barrier Treatment Dataset)**:
+
+    -   `Yes`: Both Medicaid coverage plans have the requirement.
+
+    -   `No`: Both Medicaid coverage plans do not have the requirement. 
+
+    -   `Varies by Plan`: Specific to the barrier type.
+
+    -   `Pregnant Women`: Barrier specific to pregnant women. 
+
+    -   `Not Available`: Data for this was either absent or not reported.
+
+    -   `Not Applicable`: Data for this measure is not relevant.
+
+## 3.3 Data Computation
+
+The quality of Medicaid coverage is measured by calculating the proportion of `Yes` from the `Status` column within each group in the Medical Coverage Dataset. The improvement in Medicaid coverage is represented by the increase in proportion of `Yes` over time. Additionally, the number of barriers to treatment is calculated using the Barrier Treatment Dataset.
+
+## 4. Preliminary Result
+
+### 4.1 Medicaid Coverage in the U.S.
+
+From the graphs below, it is observed that the proportion of Medicaid coverage increases almost linearly from 2008 to 2024. Two drastic drops in proportion are observed in 2009 and 2013.
+
+```{r, echo = FALSE}
+avg_yes_per_year <- medicaid_coverage_data %>% 
+  group_by(Year) %>% summarize(year_avg = sum(Status == "Yes") / n())
+```
+
+```{r, echo = FALSE}
+ggplot(data = avg_yes_per_year, aes(x = Year, y = year_avg)) + 
+  geom_point(color = "navy") + 
+  geom_line(color = "royalblue") + 
+  scale_x_continuous(breaks = seq(min(avg_yes_per_year$Year), max(avg_yes_per_year$Year), by = 1)) + 
+  labs(title = "Medicaid Coverage Proportion in the U.S. 2008-2024") +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Year", y = "Proportion")
+  
+```
+
+```{r, echo = FALSE}
+ggplot(medicaid_coverage_data, aes(x = Status, fill = Status)) + 
+  geom_bar() +
+  labs(x = NULL) + 
+  facet_wrap(~Year, nrow = 3) + 
+  labs(title = "Status Count by Year in the U.S.") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.spacing = unit(0.7,"cm"))
+```
+
+### 4.2 Medicaid Coverage in the Midwest
+
+The Medicaid coverage proportion trend in the Midwest is similar to that of the U.S. However, there is a noticeable decrease in the proportion from 2023 to 2024. Likewise, there is a decrease in proportion in Minnesota from 2023 to 2024. There is a conspicuous change in Missouri from 2010 to 2011 as well. In 2024, North Dakota, Kansas, Missouri, Illinois, Wisconsin, Indiana, and Ohio have the highest Medicaid coverage for smoking cessation treatments.
+
+```{r, include = FALSE}
+midwest_data <- medicaid_coverage_data %>% 
+filter(State %in% c("Illinois", 
+                         "Indiana",
+                         "Iowa",
+                         "Kansas",
+                         "Michigan",
+                         "Minnesota",
+                         "Missouri",
+                         "Nebraska",
+                         "North Dakota",
+                         "Ohio",
+                         "South Dakota",
+                         "Wisconsin"))
+```
+
+```{r, include = FALSE}
+midwest_avg_yes_per_year <- midwest_data %>% 
+  group_by(Year) %>% summarize(year_avg = sum(Status == "Yes") / n())
+```
+
+```{r, echo = FALSE}
+ggplot(data = midwest_avg_yes_per_year, aes(x = Year, y = year_avg)) + 
+  geom_point(color = "mediumpurple") + 
+  geom_line(color = "mediumorchid2") + 
+  scale_x_continuous(breaks = seq(min(midwest_avg_yes_per_year$Year), max(midwest_avg_yes_per_year$Year), by = 1)) + 
+  labs(title = "Medicaid Coverage Proportion in the Midwest 2008-2024") +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Year", y = "Proportion")
+```
+
+```{r, include = FALSE}
+midwest_avg_yes_state <- midwest_data %>% 
+  group_by(Year, State) %>% 
+  summarize(year_avg = sum(Status == "Yes") / n(), .groups = "drop") 
+```
+
+```{r, echo = FALSE}
+ggplot(data = midwest_avg_yes_state, aes(x = Year, y = year_avg, color = State)) + 
+  geom_point() + 
+  geom_line() + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(title = "Medicaid Coverage Proportion by State in the Midwest 2008-2024") + labs(x = "Year", y = "Proportion") + 
+  facet_wrap(~State)
+```
+
+```{r, include = FALSE}
+avg_yes_midwest_2024 <- midwest_avg_yes_state %>% filter(Year == 2024)
+midwest_vec <- c("illinois",
+  "indiana",
+  "iowa",
+  "kansas",
+  "michigan",
+  "minnesota",
+  "missouri",
+  "nebraska",
+  "north dakota",
+  "ohio",
+  "south dakota",
+  "wisconsin")
+
+us_map <- map_data("state")
+midwest_map <- us_map %>% subset(region %in% midwest_vec)
+
+avg_yes_midwest_2024$State <- tolower(avg_yes_midwest_2024$State)
+midwest_map <- midwest_map %>%
+  left_join(avg_yes_midwest_2024, by = c("region" = "State"))
+```
+
+```{r, echo = FALSE}
+ggplot(data = midwest_map, aes(x = long, y = lat, group = group, fill = year_avg)) + 
+  geom_polygon(color = "white") + 
+  scale_fill_gradientn(colors = c("#f7fcf5","#c7e9c0","#74c476","#00441b")) + 
+  labs(x = "longitude", y = "latitude") + 
+  labs(title = "Medicaid Coverage Proportion by State in the Midwest 2024") + theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(fill = "Proportion")
+```
+
+### 4.3 Treatment Barriers in the U.S.
+
+Other than `Barriers to Treatments,` `Limits on Duration` is the most common barrier in the U.S. in 2024.
+
+```{r, include = FALSE}
+barrier_us <- barrier_data %>% 
+  filter(Year == 2024) %>%
+  group_by(Type) %>% 
+  filter(Status == "Yes") %>% 
+  count() %>% 
+  arrange(n)
+```
+
+```{r, echo = FALSE}
+ggplot(data = barrier_us, aes(x = fct_reorder(Type,-n), y = n)) + 
+  geom_col() + 
+  labs(x = "Type", y = "Count") +
+  labs(title = "Type of Barrier in the U.S. 2024") +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text.x = element_text(angle = 42, hjust = 1))
+```
+
+### 4.4 Treatment Barriers in the Midwest
+
+The barriers encountered in accessing Medicaid coverage are similar to those in the U.S. overall barriers. `Annual Limits` and `Co-Payments Required` have similar counts as well.
+
+```{r, include = FALSE}
+midwest_vec2 <- c("Illinois",
+  "Indiana",
+  "Iowa",
+  "Kansas",
+  "Michigan",
+  "Minnesota",
+  "Missouri",
+  "Nebraska",
+  "North Dakota",
+  "Ohio",
+  "South Dakota",
+  "Wisconsin")
+
+barrier_midwest <- barrier_data %>% filter(State %in% midwest_vec2) %>% filter(Year == 2024) %>%
+  group_by(Type) %>% 
+  filter(Status == "Yes") %>% 
+  count() %>% 
+  arrange(n)
+```
+
+```{r, echo = FALSE}
+ggplot(data = barrier_midwest, aes(x = fct_reorder(Type,-n), y = n)) + 
+  geom_col() + 
+  labs(x = "Type", y = "Count") + 
+  labs(title = "Type of Barrier in the Midwest 2024") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text.x = element_text(angle = 42, hjust = 1))
+```
+
+## 5. Discussion
+
+## 5.1 Interpretation
+
+The results from 4.1 align with the real world events. Two major decreases in the proportion of Medicaid coverage occurred in 2009 and 2013. Simultaneously, Great Recession took place from 2007 to mid 2009 \[3\], and Taper Tantrum occurred in 2013 \[4\]. It can be concluded that the economic crisis have led the decrease in Medicaid coverage. However, since there was no drop during pandemic from 2020, Medicaid state coverage may be highly dependent on the economic status of the country rather than health status of the country. Overall, the Medicaid coverage trend has improved in the U.S. from 2008 to 2024. The drop in Medicaid coverage in the Midwest from 2023-2024 is likely due to Minnesota's result.
+
+## 5.2 Limitation
+
+This report assumes that `Barriers to Treatments` from in the `Type` column and `Comprehensive Medicaid Coverage of Treatments` in the `Treatment` column are due to type errors. However, more explanations of these variable inclusions will be helpful in investigating the barrier treatment further for future project.
+
+## 6. Citations
+
+\[1\] <https://www.cdc.gov/statesystem/factsheets/medicaid/Cessation.html>
+
+\[2\] <https://data.cdc.gov/Cessation-Coverage-/Medicaid-Coverage-Of-Cessation-Treatments-And-Barr/ntaa-dtex/about_data>
+
+\[3\] <https://en.wikipedia.org/wiki/Great_Recession>
+
+\[4\] <https://www.investopedia.com/terms/t/taper-tantrum.asp>
